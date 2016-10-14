@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="screen.css" media="all" rel="stylesheet" type="text/css"/>
+
+</head>
+<body onload="startGame()">
+<h1>Amobius - Fuel Up and Ship Out!</h1>
+<div class="gameCon">
+<canvas id="myCanvas" width="700" height="600" style="border:1px solid #990012;"> 
+Your browser does not support the HTML5 canvas tag.</canvas>
+</div>
+<script>
+
+
+// ..................................Game Objects..................................................
+//root class game object
+function Gameobject(x, y, w, h){
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.update = function(changex, changey){
+		this.x += changex;
+		this.y += changey;
+	}
+}
+//game sprite object inherits from root game object takes an array of images as parameter
+//changeImg is how many frames pass before image changes
+function Sprite(x, y, w, h, imgs){
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.img = 0;
+	this.imgs = imgs;
+	this.frame = 1;
+
+	this.update = function(changex, changey, changeImg){
+		this.frame++;
+		if(this.frame === 101){
+			this.frame = 1;
+		}
+		if(this.frame % changeImg === 0){
+			this.img++;
+			if(this.img === this.imgs.length){
+				this.img = 0;
+			}
+		}
+		this.x += changex;
+		this.y += changey;
+	}
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		ctx.drawImage(this.imgs[this.img], this.x, this.y);
+	}
+}
+Sprite.prototype = new Gameobject();
+
+//like Sprite class above but has only one image i.e. is inanimate
+function Stillsprite(x, y, w, h, img){
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.img = img;
+
+	this.update = function(changex, changey){
+		this.x += changex;
+		this.y += changey;
+	}
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		ctx.drawImage(this.img, this.x, this.y);
+	}
+}
+Stillsprite.prototype = new Gameobject();
+
+function Tracksprite(x, y, w, h, imgs){		
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.img = 0;
+	this.imgs = imgs;
+	this.frame = 1;
+	this.dist = 0;
+	this.alive = true;
+	
+	//updates position and image of sprite according to the sprites target
+	this.update = function(changeImg, speed, targetX, targetY){
+		var run = targetX - this.x;
+		var rise = targetY - this.y;
+		this.dist = Math.sqrt(rise * rise + run * run);
+		var unitX = run / this.dist;
+		var unitY = rise / this.dist;
+		
+		//used to update image of sprite every "changeImg" number of frames
+		//this.img is the index number in the imgs array
+		this.frame++;
+		if(this.frame === 10001){
+			this.frame = 1;
+		}
+		if(this.frame % changeImg === 0){
+			this.img++;
+			if(this.img === this.imgs.length){
+				this.img = 0;
+			}
+		}
+		this.x += unitX * speed;
+		this.y += unitY * speed;
+	}
+}
+Tracksprite.prototype = new Sprite();
+
+function Player(x, y, w, h, imgs){
+	this.full = 1000;
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.img = 0;
+	this.imgs = imgs;
+	this.fuel = 50;
+	this.frame = 1;
+	this.liftOff = false;
+	this.liftOffHeight = 5;
+	
+	this.update = function(changex, changey, addFuel){
+		this.frame++;
+		if(this.frame === 10001){
+			this.frame = 1;
+		}
+		if (this.frame % addFuel === 0){
+			if(this.fuel >= 1000){
+				this.fuel = this.full;
+			}
+			else {
+				this.fuel++;
+			}
+		}
+		
+		this.x += changex;
+		this.y += changey;
+	}
+	
+	this.wins = function(changex, changey, changeImg){
+		if(this.img === this.imgs.length - 1){
+			this.x += changex;
+			this.y += changey;
+		} 
+		else {
+			this.frame++;
+			if(this.frame === 10001){
+				this.frame = 1;
+			}
+			if(this.frame % changeImg === 0){
+				this.img++;
+				if(this.img < this.liftOffHeight){
+					this.x -= 1;
+					this.y -= 1;
+				}
+			}
+		}
+	}
+}
+Player.prototype = new Sprite();
+		
+function Enemy(x, y, w, h, imgs, sig, snd){
+	//letter signature
+	this.sig = sig;
+	//position and dimensions
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	//enemy imgs
+	this.img = 0;
+	this.imgs = imgs;
+	//enemy xplosion snd
+	this.sound = document.createElement("audio");
+	this.sound.src = snd;
+	this.sound.setAttribute("preload", "auto");
+	this.sound.setAttribute("controls", "none");
+	this.sound.style.display = "none";
+	//keeping track of frames
+	this.frame = 1;
+	this.dist = 0;
+	this.alive = true;
+	this.exploding = false;
+	//gives the sprite a string signature; the i in the for loop was being changed
+	//from the for loop in startgame function - hence sigi is used instead
+
+
+	this.explode = function(xpImgs){
+		this.exploding = true;
+		this.imgs = xpImgs;
+		this.img = 0;
+		this.frame = 1;
+		this.sound.play();
+	}
+	
+	this.update = function(changeImg, speed, targetX, targetY){
+		if(this.exploding){
+			this.frame++;
+			if(this.frame === 10001){
+				this.frame = 1;
+			}
+			if(this.frame % changeImg === 0){
+				this.img++;
+				if(this.img === this.imgs.length){
+					this.alive = false;
+					this.img--;
+				}
+			}
+		} 
+		else{
+			var run = targetX - this.x;
+			var rise = targetY - this.y;
+			this.dist = Math.sqrt(rise * rise + run * run);
+			var unitX = run / this.dist;
+			var unitY = rise / this.dist;
+		
+			this.frame++;
+			if(this.frame === 10001){
+				this.frame = 1;
+			}
+			if(this.frame % changeImg === 0){
+				this.img++;
+				if(this.img === this.imgs.length){
+					this.img = 0;
+				}
+			}
+			this.x += unitX * speed;
+			this.y += unitY * speed;
+		}
+	}
+	
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		ctx.drawImage(this.imgs[this.img], this.x, this.y);
+		ctx.font="20px Arial";
+		ctx.fillStyle = "black";
+		ctx.fillText(this.sig, this.x, this.y);
+	}
+	
+}
+Enemy.prototype = new Tracksprite();
+
+
+function ElecBall(x, y, w, h, imgs, sig){		
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.img = 0;
+	this.imgs = imgs;
+	this.frame = 1;
+	this.dist = 0;
+	this.alive = true;
+	this.sig = sig;
+
+}
+ElecBall.prototype = new Tracksprite();
+
+//sound effect; initialise with source of sound 
+//and the x number of frames the sound lasts for
+function Soundeffect(src, xFrames){
+	var timer = 0;
+	this.xFrames = xFrames
+	this.sound = document.createElement("audio");
+	this.sound.src = src;
+	this.sound.setAttribute("preload", "auto");
+	this.sound.setAttribute("controls", "none")
+	this.sound.style.display = "none";
+	
+	this.play = function(){
+		this.sound.play();
+	}
+}
+	
+function Story(){
+	var repeatAt = 3
+	this.gameWon = false;
+	this.nextChapter = false;
+	this.chapter = 0;
+	this.gamePaused = true;
+	this.playerCaught = false;
+	this.waves = [["ff", "jj", "jf", "jjf", "ffj", "jfj", "fff", "jjj", "fjj", "jff"],
+	["jd", "jfd", "ddd", "jdf", "jdd", "dff", "jff", "djj", "ddj", "jkk"],
+	["kd", "kfd", "kjd", "dkk", "fkd", "kkk", "djd", "kff", "dff", "jjd"],
+	["kdd", "jjjj", "jddf", "kdjf", "kkdf", "jddk", "fdjj", "fjkd", "jkkf", "djfk"],
+	["dkdk", "jfdf", "jffj", "kdkd", "kjfd", "dfjk", "fjdk", "kdfj", "dkjf", "jfdk"]];
+
+	//takes the enemy wave array and fills it up with numOfEnemy with the signatures
+	//above according to what chapter of the game player is up to
+	this.update = function(enemyWave, numOfEnemy){
+		if(enemyWave.length === 0){
+			var randmPos = 0;
+			for(i = 0; i < numOfEnemy; i++){
+				randmPos = 900 - Math.floor(Math.random() * 1200);
+				enemyWave[i] = new Enemy(randmPos, 10, 40, 27, enemyImgs, this.waves[this.chapter][i], "enemyExplode.mp3");
+			}
+		this.chapter++;
+		if(this.chapter === this.waves.length){
+			this.chapter = repeatAt;
+		}
+		this.nextChapter = true;
+		this.gamePaused = true;
+		}
+		
+	}
+	
+	this.gameOver = function(){
+		var ctx = myGameArea.context; 
+		ctx.font="40px Arial";
+		ctx.fillStyle = "black";
+		ctx.fillText("You have been captured!", 100, 200);
+		ctx.font="80px Arial";
+		ctx.fillStyle = "black";
+		ctx.fillText("Game Over", 120, 300);
+	}
+}	
+		
+//.....................................helper functions...................................................
+
+// target is what user types i.e. the typed variable, targets are the wave of enemies 
+//and targeted is the new list of targeted enemies for the update function to ensure
+//bullets chase the enemy
+function playerShoot() {
+	var aBullet = new ElecBall(335, 400, 10, 10, bulletImgs, typed);
+	bullets.push(aBullet);
+	typed = "";
+}
+
+//
+function seekEnemy(){
+	bullets.forEach(function(bullet){
+		wave.forEach(function(enemy){
+			if(enemy.sig === bullet.sig){
+				bullet.update(5, 2, enemy.x, enemy.y);
+				if(collisionDetected(bullet, enemy)){
+					bullet.alive = false;
+					enemy.explode(enemyXplodeImgs);
+				}
+			}
+		});
+		bullet.draw();
+	});
+}
+				
+//one bar = 50 units of fuel
+function fuelDisplay(fuelLevel){
+	var ctx = myGameArea.context;
+	var numOfBars = Math.floor(fuelLevel / 50);
+
+	//display outline
+	ctx.strokeStyle = "green";
+	ctx.lineWidth = 2;
+	ctx.strokeRect(3, 5, 20, 590);
+	
+	//Fuel Level display
+	//bar size is 28; 595 is the bottom y position of display;
+	//-i * 29.5 gives the number of bars up 
+	for(i = 1; i <= numOfBars; i++){
+		ctx.fillStyle = "blue";
+		ctx.fillRect(4, 595 - i * 29.5, 18, 28);
+		}		
+}
+
+function present(userTyped){
+		var ctx = myGameArea.context;
+		ctx.font="20px Arial";
+		ctx.fillStyle = "black";
+		ctx.fillText(userTyped, 550, 20);
+}
+
+function resetGame(difficulty) {
+	wave = [];
+	bullets = [];
+	amobius = new Player(300, 380, 100, 120, amobiusImgs);
+	typed = "";
+	storyLine.nextChapter = false;
+	storyLine.chapter = 0;
+	storyLine.update(wave, difficulty);
+	storyLine.gamePaused = false;
+}
+
+
+//handles collisions where nobody dies
+//may want to add impact parameter to decide bounce back amount
+function harmlessCollisionHandling(obj1, obj2, bounceBack){
+	//is object1s top left corner within the bounds of object2 or
+	//is object2s bottom right corner within the bounds of object1
+	if(obj2.x <= obj1.x && obj1.x <= obj2.x + obj2.w){
+		if(obj2.y <= obj1.y && obj1.y <= obj2.y + obj2.h){
+			obj2.x -= bounceBack;
+			obj2.y -= bounceBack;
+			obj1.x += bounceBack;
+			obj1.y += bounceBack;
+		}
+	}
+	//is object1s top right corner within the bounds of object2 or
+	//is object2s bottom left corner within the bounds of object1
+	else if(obj2.x <= obj1.x + obj1.w && obj1.x + obj1.w <= 
+	obj2.x + obj2.w){
+		if(obj2.y <= obj1.y && obj1.y <= obj2.y + obj2.h){
+			obj2.x += bounceBack;
+			obj2.y -= bounceBack;
+			obj1.x -= bounceBack;
+			obj1.y += bounceBack;
+			
+		}
+	}
+	//is object1s bottom right corner within the bounds of object2 or
+	//is object2s top left corner within the bounds of object1
+	else if(obj2.x <= obj1.x + obj1.w && obj1.x + obj1.w <=
+	obj2.x + obj2.w){
+		if(obj2.y <= obj1.y + obj1.h && obj1.y + obj1.h <= obj2.y
+		+ obj2.h){
+			obj2.x += bounceBack;
+			obj2.y += bounceBack;
+			obj1.x -= bounceBack;
+			obj1.y -= bounceBack;
+		}
+	}
+	//is object1s bottom left corner within the bounds of object2 or
+	//is object2s top right corner within the bounds of object1
+	else if(obj2.x <= obj1.x && obj1.x <= obj2.x + obj2.w){
+		if(obj2.y <= obj1.y + obj1.h && obj1.y + obj1.h <=
+		obj2.y + obj2.h){
+			obj2.x -= bounceBack;
+			obj2.y += bounceBack;
+			obj1.x += bounceBack;
+			obj1.y -= bounceBack;
+		}
+	}
+}
+
+function collisionDetected(obj1, obj2){
+	//is object1s top left corner within the bounds of object2 or
+	//is object2s bottom right corner within the bounds of object1
+	if(obj2.x <= obj1.x && obj1.x <= obj2.x + obj2.w){
+		if(obj2.y <= obj1.y && obj1.y <= obj2.y + obj2.h){
+			return true;
+		}
+	}
+	//is object1s top right corner within the bounds of object2 or
+	//is object2s bottom left corner within the bounds of object1
+	else if(obj2.x <= obj1.x + obj1.w && obj1.x + obj1.w <= 
+	obj2.x + obj2.w){
+		if(obj2.y <= obj1.y && obj1.y <= obj2.y + obj2.h){
+			return true;
+		}
+	}
+	//is object1s bottom right corner within the bounds of object2 or
+	//is object2s top left corner within the bounds of object1
+	else if(obj2.x <= obj1.x + obj1.w && obj1.x + obj1.w <=
+	obj2.x + obj2.w){
+		if(obj2.y <= obj1.y + obj1.h && obj1.y + obj1.h <= obj2.y
+		+ obj2.h){
+			return true;
+		}
+	}
+	//is object1s bottom left corner within the bounds of object2 or
+	//is object2s top right corner within the bounds of object1
+	else if(obj2.x <= obj1.x && obj1.x <= obj2.x + obj2.w){
+		if(obj2.y <= obj1.y + obj1.h && obj1.y + obj1.h <=
+		obj2.y + obj2.h){
+			return true;
+		}
+	}
+	else {
+		return false;
+	}
+}	
+
+
+//.....................................Global Variables............................................	
+var WIDTH = 700;
+var HEIGHT = 600;
+var FPS = 20;
+var coverImg = new Image();
+coverImg.src = "amob1-images/amobiusCover.png";
+var startButn = new Image();
+startButn.src = "amob1-images/start.png";
+var resetButn = new Image();
+resetButn.src = "amob1-images/reset.png";
+var startButton = new Stillsprite(150, 240, 100, 30, startButn);
+var resetButton = new Stillsprite(300, 100, 100, 30, resetButn);
+
+//The enemy
+var enemyImgs = [];
+enemyImgs[0] = new Image();
+enemyImgs[0].src = "amob1-images/enemy1.png";
+enemyImgs[1] = new Image();
+enemyImgs[1].src = "amob1-images/enemy2.png";
+var wave = [];
+var enemyXplodeImgs = [];
+enemyXplodeImgs[0] = new Image();
+enemyXplodeImgs[0].src = "amob1-images/enemyXplode1.png";
+enemyXplodeImgs[1] = new Image();
+enemyXplodeImgs[1].src = "amob1-images/enemyXplode2.png";
+enemyXplodeImgs[2] = new Image();
+enemyXplodeImgs[2].src = "amob1-images/enemyXplode3.png";
+enemyXplodeImgs[3] = new Image();
+enemyXplodeImgs[3].src = "amob1-images/enemyXplode4.png";
+enemyXplodeImgs[4] = new Image();
+enemyXplodeImgs[4].src = "amob1-images/enemyXplode5.png";
+enemyXplodeImgs[5] = new Image();
+enemyXplodeImgs[5].src = "amob1-images/enemyXplode6.png";
+enemyXplodeImgs[6] = new Image();
+enemyXplodeImgs[6].src = "amob1-images/enemyXplode7.png";
+var storyLine = new Story();
+var gamePaused = true;
+var difficulty = 10;
+
+//The player character
+var amobiusImgs = [];
+for(i = 0; i < 12; i++){
+	amobiusImgs[i] = new Image();
+	amobiusImgs[i].src = "amob1-images/amobius" + i + ".png";
+}
+var bulletImgs = [];
+bulletImgs[0] = new Image();
+bulletImgs[0].src = "amob1-images/bullet1.png";
+bulletImgs[1] = new Image();
+bulletImgs[1].src = "amob1-images/bullet2.png";
+var bullets = [];
+var amobius = new Player(300, 380, 100, 120, amobiusImgs);
+var typed = "";
+
+
+var myGameArea = {
+	canvas : document.getElementById("myCanvas"),
+	start : function() {
+		//context for myGameArea is given the canvas context 2d object complete with methods
+		this.context = this.canvas.getContext("2d");
+		//insert canvas before the first child node of html body
+		//document.body.insertBefore(this.canvas, document.body.childNodes[2]);
+		this.interval = setInterval(updateGameArea, FPS);
+		//window.addEventListener("keydown", userAction); 
+		window.addEventListener("keyup", userAction);
+		window.addEventListener("click", userClicked);
+			
+	},
+	clear : function() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	}
+}
+
+
+//........................................Running The Game.........................................
+//Listens for user/player events
+function userAction(event){
+	switch(event.keyCode){
+		case 32:
+			playerShoot();
+			break;
+		case 65:
+			typed += "a";
+			break;
+		case 83:
+			typed += "s";
+			break;
+		case 68:
+			typed += "d";
+			break;
+		case 70:
+			typed += "f";
+			break;
+		case 74:
+			typed += "j";
+			break;
+		case 75:
+			typed += "k";
+			break;
+		case 76:
+			typed += "l";
+			break;
+		case 59:
+			typed += ";";
+			break;
+		case 27:
+			storyLine.gamePaused = true;
+			break;
+		case 13:
+			if(amobius.fuel >= amobius.full){
+				storyLine.gameWon = true;
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+// This is the user interface for the cover and pause page. The offsetLeft and offsetTop
+//refer to the distance between the canvas and browser edges to determine where the start
+//button is located on the canvas
+function userClicked(event){
+	var x = event.pageX - myGameArea.canvas.offsetLeft;
+	var y = event.pageY - myGameArea.canvas.offsetTop;
+	if(storyLine.gamePaused){
+		if(storyLine.playerCaught){
+			if(x > resetButton.x && x < resetButton.x + resetButton.w){
+				if(y > resetButton.y && y < resetButton.y + resetButton.h){
+				resetGame(difficulty);
+				}
+			}
+		}
+		else {
+			if(x > startButton.x && x < startButton.x + startButton.w){
+				if(y > startButton.y && y < startButton.y + startButton.h){
+					storyLine.gamePaused = false;
+				}
+			}
+		
+		}
+	}
+}
+				
+			
+			
+
+//starting the game
+function startGame() {
+	storyLine.update(wave, difficulty);
+	storyLine.gamePaused = true;
+	storyLine.nextChapter = false;
+	myGameArea.start();
+}
+
+
+
+//updating the game
+function updateGameArea(){
+	//player has either hit escape to pause or interlude between chapters has started.
+	if(storyLine.gamePaused){
+		if(storyLine.nextChapter){
+			
+			//game interlude between chapters
+			storyLine.nextChapter = false;
+			storyLine.gamePaused = false;
+			
+		}
+		else if(storyLine.playerCaught){
+			storyLine.gameOver();
+			resetButton.draw();
+		}
+		else {
+			var ctx = myGameArea.context;
+			//splash screen with amobius cover image
+			//start button and ideally instruction button
+			myGameArea.clear();
+			ctx.drawImage(coverImg, 0, 0);
+			startButton.draw();
+		}
+	}
+	//Player has won the game
+	else if(storyLine.gameWon){
+		myGameArea.clear();
+		
+		//refresh enemy array to get rid of the dead
+		wave = wave.filter(function(enemy){ return enemy.alive; });
+	
+		//update and draw the enemies making sure they can't get on top of each other
+		// and enemies cannot collide with amobius as player has won and is flying away
+		for(i = 0; i < wave.length; i++){
+				wave[i].update(15, 1, amobius.x, amobius.y)
+				for(j = i + 1; j < wave.length; j++){
+					harmlessCollisionHandling(wave[i], wave[j], 0.5);
+				}
+				wave[i].draw();
+				
+		}
+		
+		//refresh bullet array to get rid of the used up bullets
+		bullets = bullets.filter(function(bullet){ return bullet.alive; });
+	
+		//update and draw each bullet
+		seekEnemy();
+		
+		amobius.wins(0, -2, 7);
+		amobius.draw();
+		fuelDisplay(amobius.fuel);
+	}
+	//updates game area when player has not won, game is not paused and chapter
+	// interlude is not in progress
+	else {
+	
+		
+		//clear canvas before updating frame
+		myGameArea.clear();
+	
+		//update and draw amobius; show user what they typed
+		amobius.update(0, 0, 4);
+		amobius.draw();
+		present(typed);
+		fuelDisplay(amobius.fuel);
+	
+		//refresh enemy array to get rid of the dead
+		wave = wave.filter(function(enemy){ return enemy.alive; });
+	
+		//update and draw the enemies making sure they can't get on top of each other
+		//check for collisions between amobius and enemies
+		for(i = 0; i < wave.length; i++){
+				wave[i].update(15, 1, amobius.x, amobius.y)
+				for(j = i + 1; j < wave.length; j++){
+					harmlessCollisionHandling(wave[i], wave[j], 0.5);
+				}
+				wave[i].draw();
+				if(collisionDetected(wave[i], amobius)){
+					storyLine.playerCaught = true;
+					storyLine.gamePaused = true;
+					
+				}
+		}
+	
+		//refresh bullet array to get rid of the used up bullets
+		bullets = bullets.filter(function(bullet){ return bullet.alive; });
+	
+		//update and draw each bullet
+		seekEnemy();
+		storyLine.update(wave, difficulty);
+	}
+	
+	
+}
+
+</script>
+
+</body>
+</html>

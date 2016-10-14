@@ -1,0 +1,12 @@
+/* line 1 */
+body {
+  font-family: Verdana;
+  font-size: 10pt;
+}
+
+.gameCon {
+  background-image: url("hangar.png");
+  background-position: left top;
+  background-size: 700px 600px;
+  background-repeat: no-repeat;
+}
