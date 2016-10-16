@@ -299,7 +299,7 @@ function Story(){
 			var randmPos = 0;
 			for(i = 0; i < numOfEnemy; i++){
 				randmPos = 900 - Math.floor(Math.random() * 1200);
-				enemyWave[i] = new Enemy(randmPos, 10, 40, 27, enemyImgs, this.waves[this.chapter][i], "enemyExplode.mp3");
+				enemyWave[i] = new Enemy(randmPos, 10, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
 			}
 		this.chapter++;
 		if(this.chapter === this.waves.length){

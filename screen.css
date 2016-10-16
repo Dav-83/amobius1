@@ -5,7 +5,7 @@ body {
 }
 
 .gameCon {
-  background-image: url("hangar.png");
+  background-image: url("amob1-images/hangar.png");
   background-position: left top;
   background-size: 700px 600px;
   background-repeat: no-repeat;
