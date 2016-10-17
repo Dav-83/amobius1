@@ -400,6 +400,7 @@ function resetGame(difficulty) {
 	bullets = [];
 	amobius = new Player(300, 380, 100, 120, amobiusImgs);
 	typed = "";
+	storyLine.gameWon = false;
 	storyLine.nextChapter = false;
 	storyLine.chapter = 0;
 	storyLine.update(wave, difficulty);
