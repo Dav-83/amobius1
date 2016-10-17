@@ -240,9 +240,14 @@ function Enemy(x, y, w, h, imgs, sig, snd){
 	this.draw = function(){
 		var ctx = myGameArea.context;
 		ctx.drawImage(this.imgs[this.img], this.x, this.y);
-		ctx.font="20px Arial";
-		ctx.fillStyle = "black";
-		ctx.fillText(this.sig, this.x, this.y);
+		if(this.exploding){
+			//don't write the signature on screen
+		}
+		else {
+			ctx.font="20px Arial";
+			ctx.fillStyle = "black";
+			ctx.fillText(this.sig, this.x, this.y);
+		}
 	}
 	
 }
@@ -260,7 +265,7 @@ function ElecBall(x, y, w, h, imgs, sig){
 	this.dist = 0;
 	this.alive = true;
 	this.sig = sig;
-	this.target = 0;
+	this.noTarget = true;
 
 }
 ElecBall.prototype = new Tracksprite();
@@ -335,20 +340,26 @@ function playerShoot() {
 	typed = "";
 }
 
-//function for bullets to detect enemy signatures 
+//function for bullets to detect enemy signatures
+//for each bullet check if matches any enemy signatures
+//if no match typing error destroy bullet
 function seekEnemy(){
 	bullets.forEach(function(bullet){
-		wave.forEach(function(enemy){
-			if(enemy.sig === bullet.sig){
-				bullet.target++;
-				bullet.update(5, 2, enemy.x, enemy.y);
-				if(collisionDetected(bullet, enemy)){
+		for(i = 0; i < wave.length; i++){
+			if(wave[i].sig === bullet.sig){
+				bullet.noTarget = false;
+				bullet.update(5, 2, wave[i].x, wave[i].y);
+				if(collisionDetected(bullet, wave[i])){
 					bullet.alive = false;
-					enemy.explode(enemyXplodeImgs);
+					wave[i].explode(enemyXplodeImgs);
 				}
+				i = wave.length;
 			}
-		});
-		if(bullet.target == 0){
+			else {
+				bullet.noTarget = true;
+			}
+		}
+		if(bullet.noTarget){
 			amobius.errors++;
 			bullet.alive = false;
 		}
