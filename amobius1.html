@@ -125,6 +125,7 @@ function Player(x, y, w, h, imgs){
 	this.frame = 1;
 	this.liftOff = false;
 	this.liftOffHeight = 5;
+	this.errors = 0;
 	
 	this.update = function(changex, changey, addFuel){
 		this.frame++;
@@ -259,6 +260,7 @@ function ElecBall(x, y, w, h, imgs, sig){
 	this.dist = 0;
 	this.alive = true;
 	this.sig = sig;
+	this.target = 0;
 
 }
 ElecBall.prototype = new Tracksprite();
@@ -333,11 +335,12 @@ function playerShoot() {
 	typed = "";
 }
 
-//
+//function for bullets to detect enemy signatures 
 function seekEnemy(){
 	bullets.forEach(function(bullet){
 		wave.forEach(function(enemy){
 			if(enemy.sig === bullet.sig){
+				bullet.target++;
 				bullet.update(5, 2, enemy.x, enemy.y);
 				if(collisionDetected(bullet, enemy)){
 					bullet.alive = false;
@@ -345,7 +348,13 @@ function seekEnemy(){
 				}
 			}
 		});
-		bullet.draw();
+		if(bullet.target == 0){
+			amobius.errors++;
+			bullet.alive = false;
+		}
+		else {
+			bullet.draw();
+		}
 	});
 }
 				
@@ -368,11 +377,11 @@ function fuelDisplay(fuelLevel){
 		}		
 }
 
-function present(userTyped){
+function present(info, x, y){
 		var ctx = myGameArea.context;
 		ctx.font="20px Arial";
 		ctx.fillStyle = "black";
-		ctx.fillText(userTyped, 550, 20);
+		ctx.fillText(info, x, y);
 }
 
 function resetGame(difficulty) {
@@ -695,7 +704,8 @@ function updateGameArea(){
 		//update and draw amobius; show user what they typed
 		amobius.update(0, 0, 4);
 		amobius.draw();
-		present(typed);
+		present(typed, 550, 20);
+		present(amobius.errors, 550, 60);
 		fuelDisplay(amobius.fuel);
 	
 		//refresh enemy array to get rid of the dead
