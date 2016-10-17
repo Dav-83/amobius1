@@ -704,7 +704,7 @@ function updateGameArea(){
 		//update and draw the enemies making sure they can't get on top of each other
 		//check for collisions between amobius and enemies
 		for(i = 0; i < wave.length; i++){
-				wave[i].update(15, 1, amobius.x, amobius.y)
+				wave[i].update(15, 1, amobius.x, amobius.y);
 				for(j = i + 1; j < wave.length; j++){
 					harmlessCollisionHandling(wave[i], wave[j], 0.5);
 				}
