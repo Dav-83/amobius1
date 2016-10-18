@@ -126,6 +126,8 @@ function Player(x, y, w, h, imgs){
 	this.liftOff = false;
 	this.liftOffHeight = 5;
 	this.errors = 0;
+	this.fireCnt = 0;
+	this.accuracy = 100
 	
 	this.update = function(changex, changey, addFuel){
 		this.frame++;
@@ -140,6 +142,8 @@ function Player(x, y, w, h, imgs){
 				this.fuel++;
 			}
 		}
+		//update accuracy
+		this.accuracy = Math.round(100 * ((this.fireCnt - this.errors) / this.fireCnt));
 		
 		this.x += changex;
 		this.y += changey;
@@ -339,6 +343,7 @@ function playerShoot() {
 	var aBullet = new ElecBall(335, 400, 10, 10, bulletImgs, typed);
 	bullets.push(aBullet);
 	typed = "";
+	amobius.fireCnt++;
 }
 
 //function for bullets to detect enemy signatures
@@ -392,12 +397,15 @@ function fuelDisplay(fuelLevel){
 function consoleDisplay(console, subject, typed){
 	var ctx = myGameArea.context;
 	var targetSignal = "signal: ";
+	var accuracy = amobius.accuracy
 	targetSignal += typed;
+	
 	ctx.drawImage(console, 545, 445);
 	ctx.drawImage(subject, 555, 455);
 	ctx.font="bold 15px Arial";
 	ctx.fillStyle="#33ddff";
 	ctx.fillText(targetSignal, 550, 535);
+	ctx.fillText(accuracy, 550, 560);
 }
 
 function resetGame(difficulty) {
