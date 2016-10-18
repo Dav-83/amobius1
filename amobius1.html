@@ -389,9 +389,10 @@ function fuelDisplay(fuelLevel){
 		}		
 }
 
-function consoleDisplay(img){
+function consoleDisplay(console, subject){
 	var ctx = myGameArea.context;
-	ctx.drawImage(img, 545, 445);
+	ctx.drawImage(console, 545, 445);
+	ctx.drawImage(subject, 555, 455);
 }
 
 function present(info, x, y){
@@ -537,6 +538,8 @@ enemyXplodeImgs[5] = new Image();
 enemyXplodeImgs[5].src = "amob1-images/enemyXplode6.png";
 enemyXplodeImgs[6] = new Image();
 enemyXplodeImgs[6].src = "amob1-images/enemyXplode7.png";
+var enemyScanned = new Image();
+enemyScanned.src = "amob1-images/scannerEnemy.png";
 var storyLine = new Story();
 var gamePaused = true;
 var difficulty = 10;
@@ -711,7 +714,7 @@ function updateGameArea(){
 		amobius.wins(0, -2, 7);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
-		consoleDisplay(console);
+		consoleDisplay(console, enemyScanned);
 	}
 	//updates game area when player has not won, game is not paused and chapter
 	// interlude is not in progress
@@ -727,7 +730,7 @@ function updateGameArea(){
 		present(typed, 550, 20);
 		present(amobius.errors, 550, 60);
 		fuelDisplay(amobius.fuel);
-		consoleDisplay(console);
+		consoleDisplay(console, enemyScanned);
 	
 		//refresh enemy array to get rid of the dead
 		wave = wave.filter(function(enemy){ return enemy.alive; });
