@@ -389,6 +389,11 @@ function fuelDisplay(fuelLevel){
 		}		
 }
 
+function consoleDisplay(img){
+	var ctx = myGameArea.context;
+	ctx.drawImage(img, 500, 5);
+}
+
 function present(info, x, y){
 		var ctx = myGameArea.context;
 		ctx.font="20px Arial";
@@ -550,6 +555,8 @@ bulletImgs[1].src = "amob1-images/bullet2.png";
 var bullets = [];
 var amobius = new Player(300, 380, 100, 120, amobiusImgs);
 var typed = "";
+var console = new Image();
+console.src = "amob1-images/displayGrid.png";
 
 
 var myGameArea = {
@@ -704,6 +711,7 @@ function updateGameArea(){
 		amobius.wins(0, -2, 7);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
+		consoleDisplay(console);
 	}
 	//updates game area when player has not won, game is not paused and chapter
 	// interlude is not in progress
@@ -719,6 +727,7 @@ function updateGameArea(){
 		present(typed, 550, 20);
 		present(amobius.errors, 550, 60);
 		fuelDisplay(amobius.fuel);
+		consoleDisplay(console);
 	
 		//refresh enemy array to get rid of the dead
 		wave = wave.filter(function(enemy){ return enemy.alive; });
