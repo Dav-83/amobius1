@@ -299,27 +299,63 @@ function Story(){
 	this.chapter = 0;
 	this.gamePaused = true;
 	this.playerCaught = false;
+	this.sideDists = 1200; //distance enemy can be placed away from either side of canvas
+	this.enemyXstart = -700; //x values of enemy's initial placements
+	this.timer = 0;
+	this.timerSet = false;
+	this.frames = 0;
+	this.aiTalk = 0;
 	this.waves = [["ff", "jj", "jf", "jjf", "ffj", "jfj", "fff", "jjj", "fjj", "jff"],
 	["jd", "jfd", "ddd", "jdf", "jdd", "dff", "jff", "djj", "ddj", "jkk"],
 	["kd", "kfd", "kjd", "dkk", "fkd", "kkk", "djd", "kff", "dff", "jjd"],
 	["kdd", "jjjj", "jddf", "kdjf", "kkdf", "jddk", "fdjj", "fjkd", "jkkf", "djfk"],
 	["dkdk", "jfdf", "jffj", "kdkd", "kjfd", "dfjk", "fjdk", "kdfj", "dkjf", "jfdk"]];
+	
+	//sets a timer that is used during story update to change the consoleImages
+	//works in conjuction with chapter interlude with in the updateGameArea function
+	//changes consoleSubject variable found at global variable area after set time
+	this.setTimer = function(stopAt){
+		this.frames = 0;
+		this.timer = stopAt;
+		this.timerSet = true;
+	}
+	
 
 	//takes the enemy wave array and fills it up with numOfEnemy with the signatures
 	//above according to what chapter of the game player is up to
 	this.update = function(enemyWave, numOfEnemy){
 		if(enemyWave.length === 0){
 			var randmPos = 0;
+			var side1 = this.sideDists + WIDTH;
+			var side2 = side1 + this.sideDists;
 			for(i = 0; i < numOfEnemy; i++){
-				randmPos = 900 - Math.floor(Math.random() * 1200);
-				enemyWave[i] = new Enemy(randmPos, 10, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
+				randmPos = side1 - Math.floor(Math.random() * side2);
+				enemyWave[i] = new Enemy(randmPos, this.enemyXstart, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
 			}
-		this.chapter++;
-		if(this.chapter === this.waves.length){
-			this.chapter = repeatAt;
+			this.chapter++;
+			this.sideDists = 400;
+			this.enemyXstart = -100;
+			if(this.chapter === this.waves.length){
+				this.chapter = repeatAt;
+			}
+			this.nextChapter = true;
+			this.gamePaused = true;
 		}
-		this.nextChapter = true;
-		this.gamePaused = true;
+		if(this.timerSet){
+			this.frames++;
+			if(this.frames % 13 == 0 || this.frames % 20 == 0){
+				if(this.aiTalk == 0){
+					this.aiTalk = 1;
+				}
+				else {
+					this.aiTalk = 0;
+				}
+				consoleSubject = shipAI[this.aiTalk];
+			}
+			if(this.frames > this.timer){
+				consoleSubject = enemyScanned;
+				this.timerSet = false;
+			}
 		}
 		
 	}
@@ -419,6 +455,8 @@ function resetGame(difficulty) {
 	typed = "";
 	storyLine.nextChapter = false;
 	storyLine.chapter = 0;
+	storyLine.sideDists = 400;
+	storyLine.enemyXstart = -100;
 	storyLine.update(wave, difficulty);
 	storyLine.playerCaught = false;
 	storyLine.gamePaused = false;
@@ -528,9 +566,14 @@ resetButn.src = "amob1-images/reset.png";
 var startButton = new Stillsprite(150, 240, 100, 30, startButn);
 var resetButton = new Stillsprite(300, 100, 100, 30, resetButn);
 var shipX = new Image();
-shipX.src = "amob1-images/shipX.png"
+shipX.src = "amob1-images/shipX.png";
+var shipX2 = new Image();
+shipX2.src = "amob1-images/shipX2.png";
+var shipAI = [];
+shipAI[0] = shipX;
+shipAI[1] = shipX2;
 var consoleSubject = new Image();
-consoleSubject = shipX;
+consoleSubject = shipAI[0];
 var welcomeAI = new Soundeffect("amob1-sounds/greeting.mp3");
 
 //The enemy
@@ -664,6 +707,7 @@ function userClicked(event){
 					if(gameStarted){
 						gameStarted = false;
 						welcomeAI.play()
+						storyLine.setTimer(500);
 					}
 				}
 			}
