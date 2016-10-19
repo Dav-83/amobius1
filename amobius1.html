@@ -280,9 +280,7 @@ ElecBall.prototype = new Tracksprite();
 
 //sound effect; initialise with source of sound 
 //and the x number of frames the sound lasts for
-function Soundeffect(src, xFrames){
-	var timer = 0;
-	this.xFrames = xFrames
+function Soundeffect(src){
 	this.sound = document.createElement("audio");
 	this.sound.src = src;
 	this.sound.setAttribute("preload", "auto");
@@ -520,6 +518,7 @@ function collisionDetected(obj1, obj2){
 var WIDTH = 700;
 var HEIGHT = 600;
 var FPS = 20;
+var gameStarted = true;
 var coverImg = new Image();
 coverImg.src = "amob1-images/amobiusCover.png";
 var startButn = new Image();
@@ -528,6 +527,11 @@ var resetButn = new Image();
 resetButn.src = "amob1-images/reset.png";
 var startButton = new Stillsprite(150, 240, 100, 30, startButn);
 var resetButton = new Stillsprite(300, 100, 100, 30, resetButn);
+var shipX = new Image();
+shipX.src = "amob1-images/shipX.png"
+var consoleSubject = new Image();
+consoleSubject = shipX;
+var welcomeAI = new Soundeffect("amob1-sounds/greeting.mp3");
 
 //The enemy
 var enemyImgs = [];
@@ -573,6 +577,7 @@ var amobius = new Player(300, 380, 100, 120, amobiusImgs);
 var typed = "";
 var console = new Image();
 console.src = "amob1-images/gridDisplay.png";
+
 
 
 var myGameArea = {
@@ -656,6 +661,10 @@ function userClicked(event){
 			if(x > startButton.x && x < startButton.x + startButton.w){
 				if(y > startButton.y && y < startButton.y + startButton.h){
 					storyLine.gamePaused = false;
+					if(gameStarted){
+						gameStarted = false;
+						welcomeAI.play()
+					}
 				}
 			}
 		
@@ -727,7 +736,7 @@ function updateGameArea(){
 		amobius.wins(0, -2, 7);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
-		consoleDisplay(console, enemyScanned, typed);
+		consoleDisplay(console, consoleSubject, typed);
 	}
 	//updates game area when player has not won, game is not paused and chapter
 	// interlude is not in progress
@@ -741,7 +750,7 @@ function updateGameArea(){
 		amobius.update(0, 0, 4);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
-		consoleDisplay(console, enemyScanned, typed);
+		consoleDisplay(console, consoleSubject, typed);
 	
 		//refresh enemy array to get rid of the dead
 		wave = wave.filter(function(enemy){ return enemy.alive; });
