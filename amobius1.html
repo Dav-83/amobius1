@@ -402,7 +402,8 @@ function consoleDisplay(console, subject, typed){
 	var ctx = myGameArea.context;
 	var targetSignal = "signal: ";
 	var accuracy = "hit rate: ";
-	accuracy += amobius.accuracy +="%";
+	accuracy += amobius.accuracy;
+	accuracy += "%";
 	targetSignal += typed;
 	
 	ctx.drawImage(console, 545, 445);
