@@ -342,6 +342,9 @@ function Story(){
 			this.nextChapter = true;
 			this.gamePaused = true;
 		}
+		//timer measure how long before the console image is changed back
+		//to the scanned enemy image. Also is used to flick between the AI
+		//faces to affect talking.
 		if(this.timerSet){
 			this.frames++;
 			if(this.frames % 13 == 0 || this.frames % 20 == 0){
