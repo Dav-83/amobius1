@@ -328,6 +328,7 @@ function Story(){
 			var randmPos = 0;
 			var side1 = this.sideDists + WIDTH;
 			var side2 = side1 + this.sideDists;
+			aiSounds[storyLine.chapter].play();
 			for(i = 0; i < numOfEnemy; i++){
 				randmPos = side1 - Math.floor(Math.random() * side2);
 				enemyWave[i] = new Enemy(randmPos, this.enemyXstart, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
@@ -574,7 +575,12 @@ shipAI[0] = shipX;
 shipAI[1] = shipX2;
 var consoleSubject = new Image();
 consoleSubject = shipAI[0];
-var welcomeAI = new Soundeffect("amob1-sounds/greeting.mp3");
+var aiSounds = [];
+aiSounds[0] = new Soundeffect("amob1-sounds/greeting.mp3");
+aiSounds[1] = new Soundeffect("amob1-sounds/wave1.mp3");
+aiSounds[2] = new Soundeffect("amob1-sounds/wave2.mp3");
+aiSounds[3] = new Soundeffect("amob1-sounds/wave3.mp3");
+aiSounds[4] = new Soundeffect("amob1-sounds/wave4.mp3");
 
 //The enemy
 var enemyImgs = [];
@@ -706,7 +712,7 @@ function userClicked(event){
 					storyLine.gamePaused = false;
 					if(gameStarted){
 						gameStarted = false;
-						welcomeAI.play()
+						aiSounds[0].play();
 						storyLine.setTimer(500);
 					}
 				}
@@ -736,6 +742,7 @@ function updateGameArea(){
 		if(storyLine.nextChapter){
 			
 			//game interlude between chapters
+			storyLine.setTimer(200);
 			storyLine.nextChapter = false;
 			storyLine.gamePaused = false;
 			
