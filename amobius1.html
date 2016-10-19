@@ -148,7 +148,8 @@ function Player(x, y, w, h, imgs){
 		this.x += changex;
 		this.y += changey;
 	}
-	
+	//cycle through images to affect amobius take off
+	//changeImg is the number of frames before changing img
 	this.wins = function(changex, changey, changeImg){
 		if(this.img === this.imgs.length - 1){
 			this.x += changex;
@@ -159,6 +160,9 @@ function Player(x, y, w, h, imgs){
 			if(this.frame === 10001){
 				this.frame = 1;
 			}
+			//changes img according to changeImg and frame
+			//changes position of ship according to increasing 
+			//size of ship to affect takeoff effect
 			if(this.frame % changeImg === 0){
 				this.img++;
 				if(this.img < this.liftOffHeight){
@@ -397,7 +401,8 @@ function fuelDisplay(fuelLevel){
 function consoleDisplay(console, subject, typed){
 	var ctx = myGameArea.context;
 	var targetSignal = "signal: ";
-	var accuracy = amobius.accuracy
+	var accuracy = "hit rate: ";
+	accuracy += amobius.accuracy +="%";
 	targetSignal += typed;
 	
 	ctx.drawImage(console, 545, 445);
@@ -693,7 +698,7 @@ function updateGameArea(){
 			startButton.draw();
 		}
 	}
-	//Player has won the game
+	//Player has won the game. Activate when fuel is full and player hits <enter>
 	else if(storyLine.gameWon){
 		myGameArea.clear();
 		
