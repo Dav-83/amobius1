@@ -302,7 +302,7 @@ function Story(timerArray){
 	this.gamePaused = true;
 	this.playerCaught = false;
 	this.sideDists = 1200; //distance enemy can be placed away from either side of canvas
-	this.enemyYstart = -700; //x values of enemy's initial placements
+	this.enemyYstart = -700; //y values of enemy's initial placements
 	this.timer = 0;
 	this.timerSet = false;
 	this.frames = 0;
@@ -335,7 +335,7 @@ function Story(timerArray){
 			aiSounds[this.chapter].play();
 			
 			this.sideDists = 400;
-			this.enemyXstart = -100;
+			this.enemyYstart = -100;
 			this.nextChapter = true;
 			this.gamePaused = true;
 		}
