@@ -302,16 +302,16 @@ function Story(timerArray){
 	this.gamePaused = true;
 	this.playerCaught = false;
 	this.sideDists = 1200; //distance enemy can be placed away from either side of canvas
-	this.enemyXstart = -700; //x values of enemy's initial placements
+	this.enemyYstart = -700; //x values of enemy's initial placements
 	this.timer = 0;
 	this.timerSet = false;
 	this.frames = 0;
 	this.aiTalk = 0;
-	this.waves = [["ff", "jj", "jf", "jjf", "ffj", "jfj", "fff", "jjj", "fjj", "jff"],
-	["jd", "jfd", "ddd", "jdf", "jdd", "dff", "jff", "djj", "ddj", "jkk"],
-	["kd", "kfd", "kjd", "dkk", "fkd", "kkk", "djd", "kff", "dff", "jjd"],
-	["kdd", "jjjj", "jddf", "kdjf", "kkdf", "jddk", "fdjj", "fjkd", "jkkf", "djfk"],
-	["dkdk", "jfdf", "jffj", "kdkd", "kjfd", "dfjk", "fjdk", "kdfj", "dkjf", "jfdk"]];
+	this.waves = [["ff", "jj", "jf", "jjf", "ffj", "jfj", "fff", "jjj", "fjj", "jff", "j", "f", "fj", "fjf"],
+	["jd", "jfd", "ddd", "jdf", "jdd", "dff", "jff", "djj", "ddj", "jkk", "djd", "fdf", "fdd", "fff"],
+	["kd", "kfd", "kjd", "dkk", "fkd", "kkk", "djd", "kff", "dff", "jjd", "ddk", "jfk", "jff", "ddd"],
+	["kdd", "jjjj", "jddf", "kdjf", "kkdf", "jddk", "fdjj", "fjkd", "jkkf", "djfk", "dddj", "fkdd", "fkkd", "dddd"],
+	["dkdk", "jfdf", "jffj", "kdkd", "kjfd", "dfjk", "fjdk", "kdfj", "dkjf", "jfdk", "jdjd", "ffff", "dddf", "fkdd"]];
 	
 	//takes the enemy wave array and fills it up with numOfEnemy with the signatures
 	//above according to what chapter of the game player is up to. Uses the timers array
@@ -330,7 +330,7 @@ function Story(timerArray){
 			}
 			for(i = 0; i < numOfEnemy; i++){
 				randmPos = side1 - Math.floor(Math.random() * side2);
-				enemyWave[i] = new Enemy(randmPos, this.enemyXstart, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
+				enemyWave[i] = new Enemy(randmPos, this.enemyYstart, 40, 27, enemyImgs, this.waves[this.chapter][i], "amob1-sounds/enemyExplode.mp3");
 			}
 			aiSounds[this.chapter].play();
 			
@@ -608,7 +608,7 @@ var enemyScanned = new Image();
 enemyScanned.src = "amob1-images/scannerEnemy.png";
 var storyLine = new Story([500, 300, 300, 300, 300]);
 var gamePaused = true;
-var difficulty = 10;
+var difficulty = 14;
 
 //The player character
 var amobiusImgs = [];
