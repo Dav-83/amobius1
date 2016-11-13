@@ -253,7 +253,7 @@ function Enemy(x, y, w, h, imgs, sig, snd){
 		}
 		else {
 			ctx.font="20px Arial";
-			ctx.fillStyle = "black";
+			ctx.fillStyle = "#33ddff";
 			ctx.fillText(this.sig, this.x, this.y);
 		}
 	}
@@ -777,7 +777,7 @@ function updateGameArea(){
 		//update and draw each bullet
 		seekEnemy();
 		
-		amobius.wins(0, -2, 7);
+		amobius.wins(0, -2, -5);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
 		consoleDisplay(console, consoleSubject, typed);
@@ -791,7 +791,7 @@ function updateGameArea(){
 		myGameArea.clear();
 	
 		//update and draw amobius; show user what they typed
-		amobius.update(0, 0, 4);
+		amobius.update(0, 0, 6);
 		amobius.draw();
 		fuelDisplay(amobius.fuel);
 		consoleDisplay(console, consoleSubject, typed);
