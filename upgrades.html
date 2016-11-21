@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="screen.css" media="all" rel="stylesheet" type="text/css"/>
+
+</head>
+<body onload="startGame()">
+<h1>Amobius - Fuel Up and Ship Out!</h1>
+<div class="gameCon">
+<canvas id="myCanvas" width="700" height="600" style="border:1px solid #990012;"> 
+Your browser does not support the HTML5 canvas tag.</canvas>
+</div>
+<script>
+var WIDTH = 700;
+var HEIGHT = 600;
+var FPS = 20;
+
+function Rectang(x, y, w, h){
+	//points relative to pivot point
+	var aX = x;
+	var aY = y;
+	var bX = x + w;
+	var bY = y;
+	var cX = bX;
+	var cY = y - h;
+	var dX = aX;
+	var dY = cY;
+	var relPoints = [aX, aY, bX, bY, cX, cY, dX, dY];
+	this.truePoints = [];
+	
+	this.update = function(pivX, pivY, targX, targY){
+		var pX;
+		var pY;
+		var run = targX - pivX;
+		var rise = pivY - targY;
+		var hyp = Math.sqrt(rise * rise + run * run);
+		this.truePoints = [];
+
+		
+		//frontX = pivX + pivDist / hyp * run;
+		//frontY = pivY + pivDist / hyp * rise;
+		//backX = pivX - pivDist / hyp * run;
+		//backY = pivY - pivDist / hyp * rise;
+		//leftX = pivX + pivDist / hyp * rise;
+		//leftY = pivY + pivDist / hyp * run * -1;
+		//rightX = pivX + pivDist / hyp * rise * -1;
+		//rightY = pivY + pivDist / hyp * run;
+		for(i = 0; i < relPoints.length; i += 2){
+				pX = pivX + (relPoints[i + 1] / hyp * run + relPoints[i] / hyp * rise);
+				pY = pivY - (relPoints[i + 1] / hyp * rise - relPoints[i] / hyp * run);
+				this.truePoints.push(pX, pY);
+		}
+	}
+	
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		
+		ctx.beginPath();
+		ctx.lineWidth="5";
+		ctx.strokeStyle="blue";
+		ctx.moveTo(this.truePoints[0], this.truePoints[1]);
+		ctx.lineTo(this.truePoints[2], this.truePoints[3]);
+		ctx.lineTo(this.truePoints[4], this.truePoints[5]);
+		ctx.lineTo(this.truePoints[6], this.truePoints[7]);
+		ctx.lineTo(this.truePoints[0], this.truePoints[1]);
+		ctx.stroke();
+	}
+}	
+
+
+var myGameArea = {
+	canvas : document.getElementById("myCanvas"),
+	start : function() {
+		//context for myGameArea is given the canvas context 2d object complete with methods
+		this.context = this.canvas.getContext("2d");
+		//insert canvas before the first child node of html body
+		//document.body.insertBefore(this.canvas, document.body.childNodes[2]);
+		this.interval = setInterval(updateGameArea, FPS);
+			
+	},
+	clear : function() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	}
+}
+
+
+
+
+var chamber = new Rectang(-10, 20, 20, 60);
+var barrel = new Rectang(-5, 60, 10, 40);
+ 
+
+
+function updateGameArea(){
+		//clear canvas before updating frame
+		myGameArea.clear();
+		
+		chamber.update(350, 300, 100, 500);
+		barrel.update(350, 300, 100, 500);
+		
+		chamber.draw();
+		barrel.draw();
+		
+}
+
+function startGame() {
+	myGameArea.start();
+}
+	
+	
+
+</script>
+
+</body>
+</html>
