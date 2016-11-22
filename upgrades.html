@@ -72,21 +72,30 @@ function Cannon(x, y){
 	var pivY = y;
 	var crosshairX = x;
 	var crosshairY = 0;
+	var crosshairS= 3;
+	
 	
 	var chamber = new Rectang(-10, 20, 20, 60);
 	var barrel = new Rectang(-5, 60, 10, 40);
 	
 	this.update = function(pX, pY, tX, tY, speed){
-		var run = tX - crosshairX;
-		var rise = tY - crosshairY;
-		var dist = Math.sqrt(rise * rise + run * run);
-		var unitX = run / dist;
-		var unitY = rise / dist;
-		crosshairX += unitX * speed;
-		crosshairY += unitY * speed;
+		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
+		&& tY > crosshairY - crosshairS && tY < crosshairY + crosshairS){
+			chamber.update(pivX, pivY, crosshairX, crosshairY);
+			barrel.update(pivX, pivY, crosshairX, crosshairY);
+		}
+		else{
+			var run = tX - crosshairX;
+			var rise = tY - crosshairY;
+			var dist = Math.sqrt(rise * rise + run * run);
+			var unitX = run / dist;
+			var unitY = rise / dist;
+			crosshairX += unitX * speed;
+			crosshairY += unitY * speed;
 		
-		chamber.update(pivX, pivY, crosshairX, crosshairY);
-		barrel.update(pivX, pivY, crosshairX, crosshairY);
+			chamber.update(pivX, pivY, crosshairX, crosshairY);
+			barrel.update(pivX, pivY, crosshairX, crosshairY);
+		}
 	}
 	
 	this.draw = function(){
@@ -121,7 +130,7 @@ function updateGameArea(){
 		//clear canvas before updating frame
 		myGameArea.clear();
 		
-		gun1.update(350, 300, 600, 50, 1);
+		gun1.update(350, 300, 355, 500, 1);
 		gun1.draw()
 		
 }
