@@ -15,7 +15,53 @@ var WIDTH = 700;
 var HEIGHT = 600;
 var FPS = 20;
 
-function Rectang(x, y, w, h){
+function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour){
+	var aX = p1x;
+	var aY = p1y;
+	var bX = p2x;
+	var bY = p2y;
+	var cX = p3x;
+	var cY = p3y;
+	var relPoints = [aX, aY, bX, bY, cX, cY];
+	var olC = outlineColour;
+	var fC = fillColour;
+	this.truePoints = [];
+	
+	this.update = function(pivX, pivY, targX, targY){
+		var pX;
+		var pY;
+		var run = targX - pivX;
+		var rise = pivY - targY;
+		var hyp = Math.sqrt(rise * rise + run * run);
+		this.truePoints = [];
+		
+		for(i = 0; i < relPoints.length; i += 2){
+				pX = pivX + (relPoints[i + 1] / hyp * run + relPoints[i] / hyp * rise);
+				pY = pivY - (relPoints[i + 1] / hyp * rise - relPoints[i] / hyp * run);
+				this.truePoints.push(pX, pY);
+		}
+	}
+	
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		
+		ctx.beginPath();	
+		ctx.moveTo(this.truePoints[0], this.truePoints[1]);
+		ctx.lineTo(this.truePoints[2], this.truePoints[3]);
+		ctx.lineTo(this.truePoints[4], this.truePoints[5]);
+		ctx.lineTo(this.truePoints[0], this.truePoints[1]);
+		ctx.closePath();
+		
+		ctx.lineWidth="5";
+		ctx.fillStyle = fC;
+		ctx.fill();
+		ctx.strokeStyle = olC;
+		ctx.stroke();
+	}
+
+}
+	
+function Rectang(x, y, w, h, outlineColour, fillColour){
 	//points relative to pivot point
 	var aX = x;
 	var aY = y;
@@ -26,6 +72,8 @@ function Rectang(x, y, w, h){
 	var dX = aX;
 	var dY = cY;
 	var relPoints = [aX, aY, bX, bY, cX, cY, dX, dY];
+	var olC = outlineColour;
+	var fC = fillColour;
 	this.truePoints = [];
 	
 	this.update = function(pivX, pivY, targX, targY){
@@ -56,13 +104,17 @@ function Rectang(x, y, w, h){
 		var ctx = myGameArea.context;
 		
 		ctx.beginPath();
-		ctx.lineWidth="5";
-		ctx.strokeStyle="blue";
 		ctx.moveTo(this.truePoints[0], this.truePoints[1]);
 		ctx.lineTo(this.truePoints[2], this.truePoints[3]);
 		ctx.lineTo(this.truePoints[4], this.truePoints[5]);
 		ctx.lineTo(this.truePoints[6], this.truePoints[7]);
 		ctx.lineTo(this.truePoints[0], this.truePoints[1]);
+		ctx.closePath();
+		
+		ctx.lineWidth="5";
+		ctx.fillStyle = fC;
+		ctx.fill();
+		ctx.strokeStyle = olC;
 		ctx.stroke();
 	}
 }	
@@ -75,8 +127,10 @@ function Cannon(x, y){
 	var crosshairS= 3;
 	
 	
-	var chamber = new Rectang(-10, 20, 20, 60);
-	var barrel = new Rectang(-5, 60, 10, 40);
+	var chamber = new Rectang(-10, 20, 20, 60, "blue", "grey");
+	var barrel = new Rectang(-5, 60, 10, 40, "blue", "grey");
+	var flankR = new Triang(10, -20, 10, -50, 20, -45, "blue", "red");
+	var flankL = new Triang(-10, -20, -10, -50, -20, -45, "blue", "red");
 	
 	this.update = function(pX, pY, tX, tY, speed){
 		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
@@ -95,6 +149,8 @@ function Cannon(x, y){
 		
 			chamber.update(pivX, pivY, crosshairX, crosshairY);
 			barrel.update(pivX, pivY, crosshairX, crosshairY);
+			flankR.update(pivX, pivY, crosshairX, crosshairY);
+			flankL.update(pivX, pivY, crosshairX, crosshairY);
 		}
 	}
 	
@@ -106,6 +162,8 @@ function Cannon(x, y){
 		
 		chamber.draw();
 		barrel.draw();
+		flankR.draw();
+		flankL.draw()
 	}
 }
 	
