@@ -15,7 +15,7 @@ var WIDTH = 700;
 var HEIGHT = 600;
 var FPS = 20;
 
-function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour){
+function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour, lineWidth){
 	var aX = p1x;
 	var aY = p1y;
 	var bX = p2x;
@@ -25,6 +25,7 @@ function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour){
 	var relPoints = [aX, aY, bX, bY, cX, cY];
 	var olC = outlineColour;
 	var fC = fillColour;
+	var lW = lineWidth;
 	this.truePoints = [];
 	
 	this.update = function(pivX, pivY, targX, targY){
@@ -52,7 +53,7 @@ function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour){
 		ctx.lineTo(this.truePoints[0], this.truePoints[1]);
 		ctx.closePath();
 		
-		ctx.lineWidth="5";
+		ctx.lineWidth = lW;
 		ctx.fillStyle = fC;
 		ctx.fill();
 		ctx.strokeStyle = olC;
@@ -61,7 +62,7 @@ function Triang(p1x, p1y, p2x, p2y, p3x, p3y, outlineColour, fillColour){
 
 }
 	
-function Rectang(x, y, w, h, outlineColour, fillColour){
+function Rectang(x, y, w, h, outlineColour, fillColour, lineWidth){
 	//points relative to pivot point
 	var aX = x;
 	var aY = y;
@@ -74,6 +75,7 @@ function Rectang(x, y, w, h, outlineColour, fillColour){
 	var relPoints = [aX, aY, bX, bY, cX, cY, dX, dY];
 	var olC = outlineColour;
 	var fC = fillColour;
+	var lW = lineWidth;
 	this.truePoints = [];
 	
 	this.update = function(pivX, pivY, targX, targY){
@@ -111,7 +113,7 @@ function Rectang(x, y, w, h, outlineColour, fillColour){
 		ctx.lineTo(this.truePoints[0], this.truePoints[1]);
 		ctx.closePath();
 		
-		ctx.lineWidth="5";
+		ctx.lineWidth = lW;
 		ctx.fillStyle = fC;
 		ctx.fill();
 		ctx.strokeStyle = olC;
@@ -127,10 +129,10 @@ function Cannon(x, y){
 	var crosshairS= 3;
 	
 	
-	var chamber = new Rectang(-10, 20, 20, 60, "blue", "grey");
-	var barrel = new Rectang(-5, 60, 10, 40, "blue", "grey");
-	var flankR = new Triang(10, -20, 10, -50, 20, -45, "blue", "red");
-	var flankL = new Triang(-10, -20, -10, -50, -20, -45, "blue", "red");
+	var chamber = new Rectang(-10, 20, 20, 60, "blue", "grey", 4);
+	var barrel = new Rectang(-5, 60, 10, 40, "blue", "grey", 2);
+	var flankR = new Triang(10, -20, 10, -50, 20, -45, "blue", "red", 5);
+	var flankL = new Triang(-10, -20, -10, -50, -20, -45, "blue", "red", 5);
 	
 	this.update = function(pX, pY, tX, tY, speed){
 		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
