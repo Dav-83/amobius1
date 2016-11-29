@@ -183,6 +183,8 @@ function Cannon(x, y){
 	var crosshairX = x;
 	var crosshairY = 0;
 	var crosshairS= 3;
+	var bulletX = pivX;
+	var bulletY = pivY;
 	
 	
 	var chamber = new Rectang(-5, 20, 10, 30, "black", "grey", 4);
@@ -190,19 +192,27 @@ function Cannon(x, y){
 	var flankR = new Triang(5, 10, 10, -8, 5, -12, "black", "blue", 2);
 	var flankL = new Triang(-5, 10, -10, -8, -5, -12, "black", "blue", 2);
 	var noz = new Quadril(-4, 60, 4, 60, 2, 65, -2, 65, "black", "blue", 2);
+	var lbeam = new Rectang(-2.5, 5, 5, 10, "blue", "white", 2);
 	
 	this.update = function(pX, pY, tX, tY, speed){
+		var run = tX - crosshairX;
+		var rise = tY - crosshairY;
+		var dist = Math.sqrt(rise * rise + run * run);
+		var unitX = run / dist;
+		var unitY = rise / dist;
+		
+		//if target is within the crosshair stop moving crosshair and fire beam/bullet
 		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
 		&& tY > crosshairY - crosshairS && tY < crosshairY + crosshairS){
 			chamber.update(pivX, pivY, crosshairX, crosshairY);
 			barrel.update(pivX, pivY, crosshairX, crosshairY);
+			
+			bulletX += unitX * speed;
+			bulletY += unitY * speed;
+			lbeam.update(bulletX, bulletY, crosshairX, crosshairY);
 		}
 		else{
-			var run = tX - crosshairX;
-			var rise = tY - crosshairY;
-			var dist = Math.sqrt(rise * rise + run * run);
-			var unitX = run / dist;
-			var unitY = rise / dist;
+			
 			crosshairX += unitX * speed;
 			crosshairY += unitY * speed;
 		
@@ -220,6 +230,7 @@ function Cannon(x, y){
 		ctx.arc(crosshairX, crosshairY, 5, 0, 2 * Math.PI);
 		ctx.stroke();
 		
+		lbeam.draw();
 		chamber.draw();
 		barrel.draw();
 		flankR.draw();
