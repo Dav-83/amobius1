@@ -177,14 +177,18 @@ function Oval(centreX, centreY, width, height){
 	
 	
 //**********************A simple cannon made up of moving rotating shapes*********************
+function Beam(x, y, w, h, outlineColour, fillColour, lineWidth){
+	var beamRect = new Rectang(x, y, w, h, outlineColour, fillColour, lineWidth);
+	var frontX = beamRect.truePoints[6] + (beamRect.truePoints[4] - beamRect.truePoints[6]) / 2;
+	var frontY = beamRect.truePoints[5] + (beamRect.truePoints[7] - beamRect.truePoints[5]) / 2;
+}
+
 function Cannon(x, y){
 	var pivX = x;
 	var pivY = y;
 	var crosshairX = x;
 	var crosshairY = 0;
 	var crosshairS= 3;
-	var bulletX = pivX;
-	var bulletY = pivY;
 	
 	
 	var chamber = new Rectang(-5, 20, 10, 30, "black", "grey", 4);
@@ -192,7 +196,6 @@ function Cannon(x, y){
 	var flankR = new Triang(5, 10, 10, -8, 5, -12, "black", "blue", 2);
 	var flankL = new Triang(-5, 10, -10, -8, -5, -12, "black", "blue", 2);
 	var noz = new Quadril(-4, 60, 4, 60, 2, 65, -2, 65, "black", "blue", 2);
-	var lbeam = new Rectang(-2.5, 5, 5, 10, "blue", "white", 2);
 	
 	this.update = function(pX, pY, tX, tY, speed){
 		var run = tX - crosshairX;
@@ -206,10 +209,6 @@ function Cannon(x, y){
 		&& tY > crosshairY - crosshairS && tY < crosshairY + crosshairS){
 			chamber.update(pivX, pivY, crosshairX, crosshairY);
 			barrel.update(pivX, pivY, crosshairX, crosshairY);
-			
-			bulletX += unitX * speed;
-			bulletY += unitY * speed;
-			lbeam.update(bulletX, bulletY, crosshairX, crosshairY);
 		}
 		else{
 			
@@ -230,7 +229,6 @@ function Cannon(x, y){
 		ctx.arc(crosshairX, crosshairY, 5, 0, 2 * Math.PI);
 		ctx.stroke();
 		
-		lbeam.draw();
 		chamber.draw();
 		barrel.draw();
 		flankR.draw();
@@ -238,7 +236,33 @@ function Cannon(x, y){
 		noz.draw();
 	}
 }
+
+function Simpenemy(leftx, lefty, size, letter){
+	var x = leftx;
+	var y = lefty;
+	var s = size;
+	this.cX = x + s / 2;
+	this.cY = y - s / 2;
+	this.l = letter;
+	this.alive = true;
+
+	this.update = function(){
+		x = x + 0.5;
+		y = y + 0.5;
+		this.cX = x + s / 2;
+		this.cY = y - s / 2;
+	}
 	
+	this.draw = function(){
+		var ctx = myGameArea.context;
+		ctx.rect(x, y, s, s);
+		ctx.stroke();
+		
+		ctx.font="20px Verdana";
+		ctx.fillText(this.l, x + 10, y + 25);
+	}
+}
+
 var myGameArea = {
 	canvas : document.getElementById("myCanvas"),
 	start : function() {
@@ -255,12 +279,25 @@ var myGameArea = {
 }
  
 var gun1 = new Cannon(350, 300);
+var e1 = new Simpenemy(0, 0, 30, "f");
+var e2 = new Simpenemy(20, 150, 30, "g");
+var e3 = new Simpenemy(320, 0, 30, "f");
+var e4 = new Simpenemy(40, 50, 30, "j");
+var e5 = new Simpenemy(-20, -60, 30, "d");
+var e6 = new Simpenemy(-50, 0, 30, "f");
+var e7 = new Simpenemy(400, 20, 30, "f");
+var enemies = [e1, e2, e3, e4, e5, e6, e7];
 
 function updateGameArea(){
 		//clear canvas before updating frame
 		myGameArea.clear();
 		
-		gun1.update(350, 300, 355, 500, 1);
+		for(i = 0; i < enemies.length; i++){
+			enemies[i].update();
+			enemies[i].draw();
+		}
+		
+		gun1.update(350, 300, e2.cX, e2.cY, 1);
 		gun1.draw()
 		
 }
