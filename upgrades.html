@@ -177,10 +177,42 @@ function Oval(centreX, centreY, width, height){
 	
 	
 //**********************A simple cannon made up of moving rotating shapes*********************
-function Beam(x, y, w, h, outlineColour, fillColour, lineWidth){
+function Beam(x, y, w, h, outlineColour, fillColour, lineWidth, targetX, targetY, beamSpeed, pivotX, pivotY){
 	var beamRect = new Rectang(x, y, w, h, outlineColour, fillColour, lineWidth);
-	var frontX = beamRect.truePoints[6] + (beamRect.truePoints[4] - beamRect.truePoints[6]) / 2;
-	var frontY = beamRect.truePoints[5] + (beamRect.truePoints[7] - beamRect.truePoints[5]) / 2;
+	var tX = targetX;
+	var tY = targetY;
+	var pX = pivotX;
+	var pY = pivotY;
+	var frontX; 
+	var frontY;
+	var bS = beamSpeed;
+	var targetLeeway = 3;
+	this.finished = false;
+	
+	//move beam to target location and terminate beam
+	this.update = function(){
+		var run = tX - pX;
+		var rise = tY - pY;
+		var dist = Math.sqrt(rise * rise + run * run);
+		var unitX = run / dist;
+		var unitY = rise / dist;
+		
+		pX += unitX * bS;
+		pY += unitY * bS;
+		
+		beamRect.update(pX, pY, tX, tY);
+		frontX = beamRect.truePoints[6] + (beamRect.truePoints[4] - beamRect.truePoints[6]) / 2;
+		frontY = beamRect.truePoints[5] + (beamRect.truePoints[7] - beamRect.truePoints[5]) / 2;
+		
+		if(tX > frontX - targetLeeway && tX < frontX + targetLeeway
+		&& tY > frontY - targetLeeway && tY < frontY + targetLeeway){
+			this.finished = true;
+		}
+	}
+	
+	this.draw = function(){
+		beamRect.draw();
+	}
 }
 
 function Cannon(x, y){
@@ -189,6 +221,9 @@ function Cannon(x, y){
 	var crosshairX = x;
 	var crosshairY = 0;
 	var crosshairS= 3;
+	var charged = 300;
+	this.power = 0;
+	
 	
 	
 	var chamber = new Rectang(-5, 20, 10, 30, "black", "grey", 4);
@@ -197,14 +232,14 @@ function Cannon(x, y){
 	var flankL = new Triang(-5, 10, -10, -8, -5, -12, "black", "blue", 2);
 	var noz = new Quadril(-4, 60, 4, 60, 2, 65, -2, 65, "black", "blue", 2);
 	
-	this.update = function(pX, pY, tX, tY, speed){
+	this.update = function(pX, pY, tX, tY, speed, beams){
 		var run = tX - crosshairX;
 		var rise = tY - crosshairY;
 		var dist = Math.sqrt(rise * rise + run * run);
 		var unitX = run / dist;
 		var unitY = rise / dist;
 		
-		//if target is within the crosshair stop moving crosshair
+		//if target is within the crosshair stop moving crosshair and fire
 		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
 		&& tY > crosshairY - crosshairS && tY < crosshairY + crosshairS){
 			
@@ -213,6 +248,12 @@ function Cannon(x, y){
 			flankR.update(pivX, pivY, crosshairX, crosshairY);
 			flankL.update(pivX, pivY, crosshairX, crosshairY);
 			noz.update(pivX, pivY, crosshairX, crosshairY);
+			if(this.power >= charged){
+				beams.push(new Beam(-2.5, 20, 5, 20, "blue", "blue", 1, tX, tY, 20, pivX, pivY));
+				this.power = 0;
+			}
+			this.power++;
+				
 		}
 		else{
 			
@@ -224,6 +265,8 @@ function Cannon(x, y){
 			flankR.update(pivX, pivY, crosshairX, crosshairY);
 			flankL.update(pivX, pivY, crosshairX, crosshairY);
 			noz.update(pivX, pivY, crosshairX, crosshairY);
+			
+			this.power++;
 		}
 	}
 	
@@ -291,18 +334,30 @@ var e5 = new Simpenemy(-20, -60, 30, "d");
 var e6 = new Simpenemy(-50, 0, 30, "f");
 var e7 = new Simpenemy(400, 20, 30, "f");
 var enemies = [e1, e2, e3, e4, e5, e6, e7];
+var bullets = [];
+
+
+
 
 function updateGameArea(){
 		//clear canvas before updating frame
 		myGameArea.clear();
+		var ctx = myGameArea.context;
 		
 		for(i = 0; i < enemies.length; i++){
 			enemies[i].update();
 			enemies[i].draw();
 		}
 		
-		gun1.update(350, 300, e2.cX, e2.cY, 2);
-		gun1.draw()
+		gun1.update(350, 300, e2.cX, e2.cY, 2, bullets);
+		gun1.draw();
+		
+		for(j = 0; j < bullets.length; j++){
+			bullets[j].update();
+			bullets[j].draw();
+		}
+		ctx.font="20px Verdana";
+		ctx.fillText(bullets.length, 10, 25);
 		
 }
 
