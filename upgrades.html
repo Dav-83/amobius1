@@ -204,7 +204,7 @@ function Cannon(x, y){
 		var unitX = run / dist;
 		var unitY = rise / dist;
 		
-		//if target is within the crosshair stop moving crosshair and fire beam/bullet
+		//if target is within the crosshair stop moving crosshair
 		if(tX > crosshairX - crosshairS && tX < crosshairX + crosshairS 
 		&& tY > crosshairY - crosshairS && tY < crosshairY + crosshairS){
 			chamber.update(pivX, pivY, crosshairX, crosshairY);
@@ -242,7 +242,7 @@ function Simpenemy(leftx, lefty, size, letter){
 	var y = lefty;
 	var s = size;
 	this.cX = x + s / 2;
-	this.cY = y - s / 2;
+	this.cY = y + s / 2;
 	this.l = letter;
 	this.alive = true;
 
@@ -297,7 +297,7 @@ function updateGameArea(){
 			enemies[i].draw();
 		}
 		
-		gun1.update(350, 300, e2.cX, e2.cY, 1);
+		gun1.update(350, 300, e2.cX, e2.cY, 2);
 		gun1.draw()
 		
 }
